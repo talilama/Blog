@@ -1,5 +1,5 @@
 # DNSscope: Tool for Automating DNS Recon
-Oct 11, 2024 1:00:40 PM | [DNS tool](https://blog.cyberadvisors.com/technical-blog/tag/dns-tool)
+Oct 11, 2024 1:00:40 PM 
 
 White Oak Security Introduces DNSscope Tool White Oak Security’s experts created a tool to make performing deep attack surface analysis and identifying assets quicker – introducing DNSscope, a tool for \[…\]
 
