@@ -1,6 +1,8 @@
 # Modifying Java By Editing Bytecode
 Modifying Compiled Java Executables By Editing Bytecode
--------------------------------------------------------
+
+### Written By: Michael Rand & Talis Ozols
+
 
 This post will cover the basics of Java Bytecode editing, which allows you to take a compiled Java Executable and make modifications to make the application behave differently. Java is an interesting language because it is trivial to decompile using a tool such as [Java Decompiler or jd-gui](http://java-decompiler.github.io/). This makes it extremely easy to view the source code for any project where you can get the executable JAR or compiled class files. However, recompiling without the original source is often very difficult, especially in larger projects with many dependencies. 
 
@@ -77,6 +79,3 @@ Java Bytecode
 
 This hypothetical example shows a practical application of Java Bytecode editing using Recaf. The technique definitely has some limitations. Experimenting with various modifications like removing “if” statements or redirecting application flow often causes the program to crash if not done carefully, but the technique can be very helpful in certain situations.
 
-### Talk To A Trusted Expert
-
-### Written By: Michael Rand & Talis Ozols
