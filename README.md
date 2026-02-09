@@ -5,7 +5,7 @@ This repository contains a collection of technical security blog posts I have au
 
 ## Posts
 
-* [Account Operators Privilege Escalation](./Account%20Operators%20Privilege%20Escalation)
+* [Account Operators Privilege Escalation](./Account%20Operators%20Privilege%20Escalation.md)
 * [Bypassing Microsoft Defender For Identity](./Bypassing%20Microsoft%20Defender%20For%20Identity)
 * [DNSscope](./DNSscope)
 * [Dumping LSASS Without Mimikatz](./Dumping%20LSASS%20Without%20Mimikatz)
