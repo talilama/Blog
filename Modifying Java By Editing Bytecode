@@ -1,0 +1,88 @@
+# Modifying Java By Editing Bytecode
+Modifying Compiled Java Executables By Editing Bytecode
+-------------------------------------------------------
+
+This post will cover the basics of Java Bytecode editing, which allows you to take a compiled Java Executable and make modifications to make the application behave differently. Java is an interesting language because it is trivial to decompile using a tool such as [Java Decompiler or jd-gui](http://java-decompiler.github.io/). This makes it extremely easy to view the source code for any project where you can get the executable JAR or compiled class files. However, recompiling without the original source is often very difficult, especially in larger projects with many dependencies. 
+
+Recaf
+-----
+
+Bytecode editing is a quick solution when minor changes need to be made to a compiled Java program. The technique is particularly useful when you need to change static values such as strings, as these are simple changes that don’t require complex knowledge of the underlying mechanisms of the Java compilation process. More complex changes are possible, but require an in-depth knowledge of Java bytecode implementation, StackMapTables, and verification/type checking. Several older projects for bytecode editing exist (such as [Java Bytecode Editor – JBE](http://java-decompiler.github.io/)), but require you to unzip the jar file, modify the individual class file, then repack the jar manually. This method is effective, but has limitations and can be prone to errors if the wrong syntax is used when repacking the jar. 
+
+The most effective and simple tool we found for bytecode editing was [ReCaf](https://www.coley.software/Recaf-documentation/). It has a graphical user interface that handles importing JAR files, decompiling to source, modifying byte code, and repacking the JAR file. It additionally includes some Java magic that allows you to make more changes compared to JBE without breaking the execution flow. 
+
+**A quick disclaimer:** modifying an existing Java program often goes against the license agreement with the vendor and may void any warranty provided, so using this technique is done so at your own risk. We cannot guarantee that modifying programs in this way will preserve proper application functionality. Bytecode modifications can render your application unusable. 
+
+**To minimize this risk,** we recommend the following safety steps before performing any modifications to an application using bytecode editing:
+
+1.  Take a snapshot of the virtual machine that hosts the application before making changes. 
+2.  Backup the original JAR file before making any modifications. This way, you can easily roll the deployment back to the original JAR if any of the changes break functionality.
+
+Java Bytecode Editing
+---------------------
+
+One purely hypothetical situation in which this technique would be useful is if you had purchased a Java web application and found out the developers implemented an insecure, hardcoded backdoor. This would leave the application vulnerable to any hacker who downloaded the publicly available executable and threw it into jd-gui to view its source code. Ideally, the vendor would patch this type of issue to ensure their clients are not left vulnerable to the backdoor being abused, but this is not always the case. In this type of situation, Java bytecode editing could be used to modify the backdoor string to a password only you knew, preventing unauthorized access.
+
+Say we identify the main JAR for the application and throw it into jd-gui and see an authentication method that looks something like this:
+
+![screenshot of the main JAR for the application and throw it into jd-gui and see an authentication method that looks something like this screen grab by White Oak Security, a penetration testing company. ](https://blog.cyberadvisors.com/hubfs/Imported_Blog_Media/x3srBheKzlojF8OQEJqY28KN4UnkO7rQsXGYbnT7cEEGg5-hz-03oU0c6vguL8Nllailgk4n8zYN44p2Ab-WbpvAoJG0py4z0vKxrD7CFKXCpaoeecE_9URr6AlTO_1pndbsYPRi.png)
+
+This is a relatively simple login flow that is easy to understand. The highlighted section shows that a hardcoded backdoor password allows for authenticated access as long as the provided username exists! The goal is to use bytecode editing to modify the hardcoded password to a new, secure string. 
+
+Some other potential mitigations would be to remove the “if” statement entirely, or to change the authentication boolean from “true” to “false”, explicitly forcing the backdoor to fail. However, these options introduce additional complexities that may cause the program to not run properly, so editing the backdoor password is a sufficient middle ground as long as the new password is kept safe. Keep in mind that anyone with access to the compiled JAR file would have access to the password.
+
+### Steps to modify bytecode:
+
+To modify the file, download and open ReCaf:
+
+```
+java -jar recaf-2.21.11-J8-jar-with-dependencies.jar
+```
+
+
+and select the jar to be edited using File -> Load:
+
+![image is a screenshot of recaf example by White Oak Security that is demonstrating how to modify java using bytecode editing](https://blog.cyberadvisors.com/hubfs/Imported_Blog_Media/N3ztn7Z41OtTa-Gc2OJSsT4Ird5H-2hCcYg9kjq6ezmf8FDQODkJi87HJvMrfKboN6KyTPTvNd0b_abeHQzDsBvxVVfpUDQiASQutnbhKg8SPBHMk0QUg7jYTkozeSBP-WPrmVZg.png)
+
+Right click on the name of the method (in this case, the “authenticate” method), and select “Edit with assembler”:
+
+![White Oak Security's example of Recaf's page with a right click on the name of the method (in this case, the “authenticate” method), and select “Edit with assembler”](https://blog.cyberadvisors.com/hubfs/Imported_Blog_Media/OISOCpPN5-NzsX7t5nPzF0XUmiSB-a2wfGPaHEpdYr9uUnJJ_Z6ebakQeYhxrQmJRZlE6FU9aSQX6mDQXBn3M6CzAvRrfrZRGBTm6xZpgDEeJmXiI6WqgjUbJVAmFqFuxitKDflJ.png)
+
+This will open the assembly editor:
+
+![White Oak Security (a security testing company) displays the Recaf example of how this will open the assembly editor for modifying java with bytecode](https://blog.cyberadvisors.com/hubfs/Imported_Blog_Media/XFf6BzYgC6aPSg3NsYDk8gln81eaLA7z-S1hNfyAe_SyKNl3TFmcJa3x8Qqee2oNi58flEomaNyuD6EFNNtrDM8y3rSsUNTYzakdcF4KCr6--QHCr2hC5_DLse9Gq6_APsIdhdUQ.png)
+
+Scroll down until you see a line with “LDC” and the hardcoded password string. This will be the line we will modify. The “LDC” instruction loads a constant onto the stack. A reference for other bytecode instructions [can be found here](https://en.wikipedia.org/wiki/List_of_Java_bytecode_instructions).
+
+![This screenshot from White Oak. Security's cybersecurity blog shows that if you Scroll down until you see a line with “LDC” and the hardcoded password string. This will be the line we will modify. The “LDC” instruction loads a constant onto the stack. ](https://blog.cyberadvisors.com/hubfs/Imported_Blog_Media/cuI3cXMwQgkuafNdCotFTDBO_0FwIhSW2nh0VGOBsqcfCaR4apfyg6R1HchrNAP8pm3rZCwlEDfAJpx45AvOL_Ix15NrLxlVxEeUXhTCbLGtBi6bm5AcPkPmtdSVtpiLL_t561EN.png)
+
+Double click on the password string and change it to the password you want to use:
+
+![This screen capture by White Oak Security's pentesters shows that double click on the password string and change it to the password you want to use in the recaf program to edit bytecode](https://blog.cyberadvisors.com/hubfs/Imported_Blog_Media/AnChLsA7iA2FiaWk7HtYX4Z1yq1DYaOwKzzfNgYNrwikZT6-E42tp-pDxToKkAIqa7SK-6NH8Wh89Y7uguZSvT1g7H8ifVdbf1CpFlH7We_ZZ0s_cwnX-lm_W63Akp0S2_TxyVJF.png)
+
+Type CTRL-s to save the modifications, close the assembly editor, then select: File -> Export Program:
+
+![Capture shows the next step by White Oak Security, Type CTRL-s to save the modifications, close the assembly editor, then select: File -> Export Program.](https://blog.cyberadvisors.com/hubfs/Imported_Blog_Media/_6qtUljNkWtligPE7f3jdcYhAiDxFsXN8_fTwERpYmAtYVFqIfgt6oenzYhOrvKh3ESB45esj159Beev76biKKxDdOsg6C6gj54u-xsg6KQEs8zPNNktpGiseIiiD-KgRpiS4eby.png)
+
+Choose a good name for the modified binary (i.e. BackdoorExample\_modified.jar). Now it is probably a good idea to check that it was recompiled and packed appropriately. Open jd-gui and load the modified binary. Browse to the modified “authenticate” method and make sure the password was modified:
+
+![This screenshot shows how White Oak Security's penetration testers Choose a good name for the modified binary (i.e. BackdoorExample_modified.jar). Now it is probably a good idea to check that it was recompiled and packed appropriately. Open jd-gui and load the modified binary. Browse to the modified “authenticate” method and make sure the password was modified.](https://blog.cyberadvisors.com/hubfs/Imported_Blog_Media/uDYPGpRIGymXfKgAlg_7i8WogJzdW4eqNX_iOXL5mFE3_qq-9dhpZQ_le7-LzOFmLaCj0KI32hGjEMSqnolS42jZyVklxkS6QNGWLrMi1JDS0m3ZcuwZ82yqEJSgV-5kpqgpbJ_b.png)
+
+Now that everything appears in order, we need to substitute the modified binary in the application. Start by renaming the initial executable in the application directory. We usually just add a “.bak” to the end of the file (i.e. “BackdoorExample.jar.bak”). Now, copy the modified executable to the same directory, make sure it has the same name as the initial executable (in this example, “BackdoorExample.jar”), and restart the application or the application server to implement the changes. Double-check that the authentication flow works properly using a standard login.
+
+Next, try with the initial backdoor password and it should now fail. Finally, try with the new password you modified and it should authenticate successfully! 
+
+Java Bytecode
+-------------
+
+This hypothetical example shows a practical application of Java Bytecode editing using Recaf. The technique definitely has some limitations. Experimenting with various modifications like removing “if” statements or redirecting application flow often causes the program to crash if not done carefully, but the technique can be very helpful in certain situations.
+
+### MORE FROM OUR TECHNICAL BLOG
+
+Cyber Advisors specializes in providing fully customizable cyber security solutions & services. Our knowledgeable, highly skilled, talented security experts are here to help design, deliver, implement, manage, monitor, put your defenses to the test, & strengthen your systems - so you don’t have to.
+
+[Read more from our technical experts...](https://blog.cyberadvisors.com/technical-blog)
+
+### Talk To A Trusted Expert
+
+### Written By: Michael Rand & Talis Ozols
