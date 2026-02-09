@@ -199,11 +199,6 @@ Defenders should make sure their broadcast poisoning honeypot meets the followin
 
 When these detection tools are configured and implemented correctly, they are nearly impossible to fingerprint as bait requests. However, if the above criteria are not satisfied, attackers may be able to identify and filter the bait requests. If legitimate broadcast traffic still exists, this allows them to fly under-the-radar and potentially obtain a foothold on the network via broadcast poisoning. This honeypot broadcast traffic technique in conjunction with effective Group Policy settings to disable legitimate broadcast traffic should be implemented on all internal networks for optimum security.
 
-### MORE FROM OUR TECHNICAL BLOG
-
-Cyber Advisors specializes in providing fully customizable cyber security solutions & services. Our knowledgeable, highly skilled, talented security experts are here to help design, deliver, implement, manage, monitor, put your defenses to the test, & strengthen your systems - so you don’t have to.
-
-[Read more from our technical experts...](https://blog.cyberadvisors.com/technical-blog)
 
 ###### **Sources**:
 
@@ -219,5 +214,3 @@ Cyber Advisors specializes in providing fully customizable cyber security soluti
 [Responder](https://github.com/SpiderLabs/Responder) – Responder Github
 9.  [https://github.com/Kevin-Robertson/Inveigh](https://github.com/Kevin-Robertson/Inveigh)  – Inveigh Github
 10.  [https://github.com/RedTeamPentesting/pretender](https://github.com/RedTeamPentesting/pretender) – Pretender Github
-
-### Let's Talk More
