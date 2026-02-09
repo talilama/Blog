@@ -232,10 +232,3 @@ Microsoft Defender For ID Conclusion
 
 Microsoft Defender for ID is very robust right out of the box and makes life difficult for attackers attempting to fly under the radar. It provides excellent insight into attacks and automatically disables accounts suspected of being compromised or used in an attack. However, as this post demonstrates there are several methods for bypassing these detections that can be used by red teamers or penetration testers to achieve their objectives. From my testing, RDP appeared to be the most reliable way of achieving code execution without setting off alerts, with unmodified pass-the-hash capable tools being difficult to use without detection.
 
-### MORE FROM OUR TECHNICAL BLOG
-
-Cyber Advisors specializes in providing fully customizable cyber security solutions & services. Our knowledgeable, highly skilled, talented security experts are here to help design, deliver, implement, manage, monitor, put your defenses to the test, & strengthen your systems - so you don’t have to.
-
-[Read more from our technical experts...](https://blog.cyberadvisors.com/technical-blog)
-
-### Learn More
