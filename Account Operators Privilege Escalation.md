@@ -157,12 +157,4 @@ Account Operators Privilege Escalation Wrap-Up
 
 The default Account Operators group is often just one step away from Domain Administrator privileges. It allows attackers to change user passwords or group membership for any user or group not within the protected groups. For attackers, this is a useful group to achieve privilege escalation to DA or maintain less obvious persistence within an environment. For Defenders, this group should be monitored, and users within the group should be considered to have DA privileges. 
 
-### MORE FROM OUR TECHNICAL BLOG
-
-Cyber Advisors specializes in providing fully customizable cyber security solutions & services. Our knowledgeable, highly skilled, talented security experts are here to help design, deliver, implement, manage, monitor, put your defenses to the test, & strengthen your systems - so you don’t have to.
-
-[Read more from our technical experts...](https://blog.cyberadvisors.com/technical-blog)
-
-### Talk To A Trusted Cyber Advisor
-
 ### Written By: Talis Ozols
