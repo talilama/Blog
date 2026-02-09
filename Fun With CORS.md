@@ -98,16 +98,10 @@ CORS Headers
 
 When looking for ways to exploit CORS issues, keep an eye out for the application response headers. While in my experience this misconfiguration is not common, the reflection of authorization tokens within response headers provided an easy attack path without needing to construct further requests for account takeover. The application does not need to reflect the authorization headers on all pages either to be susceptible. Keep an eye out for tokens being set in cookies or headers on token refresh endpoints or on other individual responses as well. 
 
-### MORE FROM OUR TECHNICAL BLOG
-
-Cyber Advisors specializes in providing fully customizable cyber security solutions & services. Our knowledgeable, highly skilled, talented security experts are here to help design, deliver, implement, manage, monitor, put your defenses to the test, & strengthen your systems - so you don’t have to.
-
-[Read more from our technical experts...](https://blog.cyberadvisors.com/technical-blog)
 
 ###### **Sources**:
 
 1\. [https://portswigger.net/research/exploiting-cors-misconfigurations-for-bitcoins-and-bounties](https://portswigger.net/research/exploiting-cors-misconfigurations-for-bitcoins-and-bounties) – article from where initial exploit code was used
 
-### More Info Please
 
 ### Written By: Talis Ozols
