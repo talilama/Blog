@@ -1,0 +1,46 @@
+# Using DNS To Bypass SSRF Protections
+On a recent web application penetration test, I identified a classic server-side request forgery ([SSRF](https://www.whiteoaksecurity.com/blog/tag/ssrf/)) vulnerability that used a Denylist in an attempt to prevent active exploitation. This post details a quick and easy method for bypassing this type of control when exploiting an SSRF vulnerability.
+
+The application I was testing allowed you to create a “Connection Profile” to integrate the application with third-party APIs, but it allowed users to configure the remote host, port, path, and include Basic authentication. 
+
+Screenshot of configuring a test server in the Connection Profile to verify the SSRF:
+
+![](https://blog.cyberadvisors.com/hubfs/Imported_Blog_Media/r7qv78UO3YsKS0ZAHfAp-DsUcqbUPg8YuxeEyvu3FzSB0OYGAcP2rIcVRSCBbNpBwEVccHS7PD87JxfH8u3dh2UuXApI__uVIaXplnaZ1_YhOXgNi4CNbbHSLabrMBvRTFDdGMxtWL2G9vaBdPpXog.png)
+
+Setting a listener on my server on port 9999 verified the connection was made server-side, and the full response body was returned in the application, resulting in a full SSRF vulnerability. 
+
+Analysis of the application revealed it was hosted in the Azure cloud, so the Azure metadata API was a prime target. The Azure metadata API requires the header to be set to prevent this type of vulnerability, but the target application additionally allowed arbitrary headers to be added to the request. The connection profile was set to “http://169.254.169.254/metadata/instance?api-version=2021-02-01” and the “Metadata: True” header was added to the connection profile:
+
+![](https://blog.cyberadvisors.com/hubfs/Imported_Blog_Media/Cm_vCXMEI7vwU2qHLoc49Wxe4CGzfnvtFaO5nRbRRER8VX8sIFS7CeIntNLz-lJ9nSQBoIsfTsuSlZu9A0cqyZ0v8Dr3AGz9PXoUBOUb0T7ppXEDOXEqlszHunP40N9C3VyHEg-ogzqSlG6kifRQlg.png)
+
+Firing off the request with the above configuration resulted in an error message noting the application used a denylist to prevent access to the cloud metadata address (169.254.169.254).
+
+Screenshot shows the application forbade connecting to the metadata IP:
+
+![](https://blog.cyberadvisors.com/hubfs/Imported_Blog_Media/RsQNYmcHR82_oJchVVaTSG9zyW2hkLn4ujMdZkG7yURmw3kelNk3u5KTBTG6vk4ci8EcGwuTXkjx5LSpIpZxUUIAPo0EjhBkK4cc897TH-bplaaJLtfDYm2U-ImTFc_PwTNpmg_HklpFENKUgK88WA.png)
+
+Bypassing SSRF Control
+
+I tried a few options to bypass the denylist without any luck. Finally, I decided to set an external domain name to the metadata IP. Using GoDaddy DNS management for my test domain, I set the metadata subdomain to point to 169.254.169.254:
+
+![](https://blog.cyberadvisors.com/hubfs/Imported_Blog_Media/qNMnfMTrEDqpsxFVlqF9w24b4n0PhMuU2f5I7DVsyMPQUR65bKp26Yg6Uhk3dCoZYVFkzAKaQ6N0Z08q7bAaFSZw6wQn-2_iSOQY2pcHkDc3Q2IRZmLmxXwXL7CdJ8Np2CiCQnZiP08wBzXXJ6s1sA.png)
+
+After verifying the DNS entry for the new subdomain had propagated, I used the subdomain for the connection profile. This successfully bypassed the denylist and allowed access to the cloud metadata!
+
+![](https://blog.cyberadvisors.com/hubfs/Imported_Blog_Media/WcvqWlKw_4ZbBKPLJmbDsA-vzk7AUsvFtjZng_wdza7-umlcX06N3Ph8ced09LszHQuhsAM2oSkPJQRiMQrWPW0G1PSl34LlBDl3rVXwrx30_MfOpley9dmeLozI5lY0UFKSz0Te0zq6y-T9yDq2Dg.png)
+
+Bypassing SSRF Conclusion
+
+This is an easy and effective way to bypass denylist-based protections for SSRF vulnerabilities. Upon further research, it appears that some applications will even go so far as to resolve the domain name before checking against the denylist, which would result in this technique failing. However, this [blog](https://sirleeroyjenkins.medium.com/bypassing-ssrf-protection-to-exfiltrate-aws-metadata-from-larksuite-bf99a3599462) details the use of DNS rebinding to trick the application in this situation. This essentially rapidly changes the DNS entry from something innocuous that bypasses the filter to the actual metadata IP address for subsequent attempts.
+
+These types of bypasses are an excellent example of why denylist-based protections against SSRF vulnerabilities are often insufficient. 
+
+### MORE FROM OUR TECHNICAL BLOG
+
+Cyber Advisors specializes in providing fully customizable cyber security solutions & services. Our knowledgeable, highly skilled, talented security experts are here to help design, deliver, implement, manage, monitor, put your defenses to the test, & strengthen your systems - so you don’t have to.
+
+[Read more from our technical experts...](https://blog.cyberadvisors.com/technical-blog)
+
+### Need Help?
+
+### Written By: Talis Ozols
