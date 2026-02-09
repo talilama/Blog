@@ -1,13 +1,6 @@
-# Sneaking Past the Bouncer:Identifying Web Servers Behind WAFs
-Oct 28, 2024 10:04:18 AM |
+# Sneaking Past the Bouncer: Identifying Web Servers Behind WAFs #
 
-Learn techniques to identify web servers behind Web Application Firewalls (WAFs), bypass middleman security, and uncover potential vulnerabilities in web applications.
-
-Sneaking Past the Bouncer: Identifying Web Servers Behind WAFs
-
-Talis Ozols | June 17, 2024 | Web Application
-
-![](https://blog.cyberadvisors.com/hs-fs/hubfs/image-png-Oct-28-2024-02-59-03-5865-PM.png?width=887&height=590&name=image-png-Oct-28-2024-02-59-03-5865-PM.png)
+Talis Ozols | June 17, 2024
 
 INTRO
 -----
