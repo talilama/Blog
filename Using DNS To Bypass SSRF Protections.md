@@ -35,12 +35,4 @@ This is an easy and effective way to bypass denylist-based protections for SSRF 
 
 These types of bypasses are an excellent example of why denylist-based protections against SSRF vulnerabilities are often insufficient. 
 
-### MORE FROM OUR TECHNICAL BLOG
-
-Cyber Advisors specializes in providing fully customizable cyber security solutions & services. Our knowledgeable, highly skilled, talented security experts are here to help design, deliver, implement, manage, monitor, put your defenses to the test, & strengthen your systems - so you don’t have to.
-
-[Read more from our technical experts...](https://blog.cyberadvisors.com/technical-blog)
-
-### Need Help?
-
 ### Written By: Talis Ozols
