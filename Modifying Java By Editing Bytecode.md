@@ -77,12 +77,6 @@ Java Bytecode
 
 This hypothetical example shows a practical application of Java Bytecode editing using Recaf. The technique definitely has some limitations. Experimenting with various modifications like removing “if” statements or redirecting application flow often causes the program to crash if not done carefully, but the technique can be very helpful in certain situations.
 
-### MORE FROM OUR TECHNICAL BLOG
-
-Cyber Advisors specializes in providing fully customizable cyber security solutions & services. Our knowledgeable, highly skilled, talented security experts are here to help design, deliver, implement, manage, monitor, put your defenses to the test, & strengthen your systems - so you don’t have to.
-
-[Read more from our technical experts...](https://blog.cyberadvisors.com/technical-blog)
-
 ### Talk To A Trusted Expert
 
 ### Written By: Michael Rand & Talis Ozols
