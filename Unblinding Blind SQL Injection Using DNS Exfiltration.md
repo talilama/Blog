@@ -1,8 +1,6 @@
 # Unblinding Blind SQL Injection Using DNS Exfiltration
 Jun 3, 2025 12:12:04 PM |
 
-Unveil effective DNS exfiltration techniques to exploit blind SQL injection vulnerabilities, speeding up data extraction and enhancing your penetration testing toolkit.
-
 INTRO
 -----
 
